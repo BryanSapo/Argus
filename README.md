@@ -2,12 +2,46 @@
 
 **Reusable LLM-powered infrastructure monitoring agent + AI incident simulator.**
 
-Argus combines two components:
+Argus is a full-stack observability and incident simulation platform designed for AI/ML infrastructure teams. It pairs a tick-based **AI Infrastructure Incident Simulator (AIIS)** with a pluggable **LLM-powered monitoring agent** to create a closed-loop system where synthetic infrastructure failures are generated, observed, and diagnosed — all within a single application.
 
-1. **AIIS (AI Infrastructure Incident Simulator)** — A simulation platform that generates synthetic logs, metrics, and system events to emulate production ML infrastructure failures.
-2. **Argus Agent** — A reusable, pluggable LLM-powered monitoring agent that analyzes observability signals and produces structured diagnosis reports.
+### Why Argus?
 
-Together they provide a controlled environment to simulate infrastructure incidents and test AI-driven diagnosis systems.
+Real production systems are difficult to break on purpose: failures are hard to reproduce, labeled incident datasets are scarce, and evaluating AI-based diagnosis tools requires realistic yet controllable signals. Argus solves this by providing a deterministic simulation environment that produces correlated **metrics**, **structured logs**, and **discrete events** — the same three pillars of observability used in production — and then feeds them into an LLM agent that returns structured root-cause analysis.
+
+### What It Does
+
+| Component               | Role                                                                                                                                                                                                                                                                                                                                                                                 |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **AIIS — Simulator**    | A tick-driven engine that generates synthetic time-series metrics (latency p50/p95, throughput, error rate, queue depth, CPU/memory utilization), rule-based structured logs (INFO / WARN / ERROR), and discrete system events (deployments, traffic spikes, dependency outages, recoveries). Users can tune system parameters in real time and inject predefined failure scenarios. |
+| **Argus Agent**         | A reusable, framework-agnostic monitoring agent. It consumes observability data through a pluggable `DataSource` abstraction, builds a compact context payload, sends it to any LLM backend via a pluggable `LLMClient` interface, and returns a structured `DiagnosisReport` with severity, root cause, supporting evidence, recommendations, and affected components.              |
+| **Streamlit Dashboard** | A single-page interactive UI that hosts the control panel, live Plotly charts, streaming logs, event timeline, and an AI diagnosis panel — all updating in real time.                                                                                                                                                                                                                |
+| **FastAPI REST API**    | A lightweight API that exposes the simulation state (`/api/metrics`, `/api/logs`, `/api/events`, `/api/summary`, `/api/snapshot`) for external consumers, scripts, or LLM agents running out-of-process.                                                                                                                                                                             |
+
+### Target Users
+
+- **AI / ML engineers** building or evaluating AI-driven monitoring and alerting systems
+- **SRE / reliability engineers** prototyping incident response automation
+- **Backend / infrastructure engineers** testing observability pipelines
+- **Researchers** working on agentic AI, anomaly detection, or root-cause analysis
+
+---
+
+## Tech Stack
+
+| Layer           | Technology                                                      | Purpose                                                                         |
+| --------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Language        | **Python 3.12+**                                                | Core runtime                                                                    |
+| Package Manager | **[uv](https://docs.astral.sh/uv/)**                            | Fast dependency resolution and virtualenv management                            |
+| Web UI          | **[Streamlit](https://streamlit.io/)**                          | Interactive dashboard with real-time controls and auto-rerun loop               |
+| Charting        | **[Plotly](https://plotly.com/python/)**                        | Interactive time-series visualizations (latency, throughput, error rate, queue) |
+| REST API        | **[FastAPI](https://fastapi.tiangolo.com/)**                    | Async REST endpoints for LLM agent / programmatic access                        |
+| ASGI Server     | **[Uvicorn](https://www.uvicorn.org/)**                         | Serves the FastAPI app in a background thread                                   |
+| Data Modeling   | **[Pydantic v2](https://docs.pydantic.dev/)**                   | Schema definitions, validation, and JSON serialization for all data records     |
+| Data Handling   | **[Pandas](https://pandas.pydata.org/)**                        | DataFrame operations for metric history                                         |
+| Simulation Math | **[NumPy](https://numpy.org/)**                                 | Gaussian noise, metric computation                                              |
+| HTTP Client     | **[HTTPX](https://www.python-httpx.org/)**                      | LLM API calls (OpenRouter) and data source fetching                             |
+| Config          | **[python-dotenv](https://github.com/theskumar/python-dotenv)** | `.env` file support for API keys                                                |
+| LLM Provider    | **[OpenRouter](https://openrouter.ai/)**                        | Access to hosted LLM models (default: `nvidia/nemotron-3-super-120b-a12b:free`) |
 
 ---
 
