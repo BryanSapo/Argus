@@ -197,41 +197,43 @@ with log_col:
     recent_logs = state.recent_logs(80)
     filtered = [l for l in recent_logs if l.level.value in log_filter]
 
-    if filtered:
-        for log in reversed(filtered[-30:]):
-            colour = {"INFO": "blue", "WARN": "orange", "ERROR": "red"}[log.level.value]
-            st.markdown(
-                f"<span style='color:{colour};font-weight:600'>[{log.level.value}]</span> "
-                f"<span style='color:gray;font-size:0.85em'>{log.timestamp.strftime('%H:%M:%S')} · {log.source}</span><br/>"
-                f"{log.message}",
-                unsafe_allow_html=True,
-            )
-            st.markdown("---")
-    else:
-        st.caption("No logs yet.")
+    with st.container(height=400):
+        if filtered:
+            for log in reversed(filtered[-30:]):
+                colour = {"INFO": "blue", "WARN": "orange", "ERROR": "red"}[log.level.value]
+                st.markdown(
+                    f"<span style='color:{colour};font-weight:600'>[{log.level.value}]</span> "
+                    f"<span style='color:gray;font-size:0.85em'>{log.timestamp.strftime('%H:%M:%S')} · {log.source}</span><br/>"
+                    f"{log.message}",
+                    unsafe_allow_html=True,
+                )
+                st.markdown("---")
+        else:
+            st.caption("No logs yet.")
 
 with event_col:
     st.subheader("🗓️ Event Timeline")
     recent_events = state.recent_events(30)
-    if recent_events:
-        for evt in reversed(recent_events):
-            icon = {
-                "deployment": "🚀",
-                "deployment_regression": "⚠️",
-                "traffic_spike": "📈",
-                "dependency_failure": "🔌",
-                "resource_exhaustion": "💾",
-                "recovery": "✅",
-            }.get(evt.event_type, "📌")
-            st.markdown(
-                f"{icon} **{evt.event_type.replace('_', ' ').title()}** "
-                f"<span style='color:gray;font-size:0.85em'>({evt.timestamp.strftime('%H:%M:%S')})</span><br/>"
-                f"{evt.description}",
-                unsafe_allow_html=True,
-            )
-            st.markdown("---")
-    else:
-        st.caption("No events yet.")
+    with st.container(height=400):
+        if recent_events:
+            for evt in reversed(recent_events):
+                icon = {
+                    "deployment": "🚀",
+                    "deployment_regression": "⚠️",
+                    "traffic_spike": "📈",
+                    "dependency_failure": "🔌",
+                    "resource_exhaustion": "💾",
+                    "recovery": "✅",
+                }.get(evt.event_type, "📌")
+                st.markdown(
+                    f"{icon} **{evt.event_type.replace('_', ' ').title()}** "
+                    f"<span style='color:gray;font-size:0.85em'>({evt.timestamp.strftime('%H:%M:%S')})</span><br/>"
+                    f"{evt.description}",
+                    unsafe_allow_html=True,
+                )
+                st.markdown("---")
+        else:
+            st.caption("No events yet.")
 
 # ---------------------------------------------------------------------------
 # AI Diagnosis (Argus Agent)
